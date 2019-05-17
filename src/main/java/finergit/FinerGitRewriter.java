@@ -2,6 +2,8 @@ package finergit;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.ArrayList;
+import finergit.ast.JavaFileVisitor;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
@@ -21,6 +23,15 @@ public class FinerGitRewriter extends ConcurrentRepositoryRewriter {
   private final FinerGitConfig config;
 
   private final FinerJavaFileBuilder builder;
+
+  static ArrayList<Integer> startList = new ArrayList<Integer>();
+  static ArrayList<Integer> lengthList = new ArrayList<Integer>();
+  static ArrayList<String> methodList = new ArrayList<String>();
+
+  public void methodLineSet(int st,int lng){
+    startList.add(st);
+    lengthList.add(lng);
+  }
 
   public FinerGitRewriter(final FinerGitConfig config) {
     this.config = config;
@@ -56,9 +67,31 @@ public class FinerGitRewriter extends ConcurrentRepositoryRewriter {
           String.join(System.lineSeparator(), m.getLines()) + System.lineSeparator();
       final ObjectId newId = writeBlob(finerSource.getBytes(StandardCharsets.UTF_8));
       final String name = m.getFileName();
+      methodList.add(finerSource.replaceAll("\n"," "));
       log.debug("Generate finer module: {} -> {} {}", entry, name, newId.name());
       result.add(new Entry(entry.mode, name, newId, entry.pathContext));
     }
+
+    final String test = new String(readBlob(entry.id), StandardCharsets.UTF_8);
+    StringBuilder sb = new StringBuilder();
+    sb.append(test);
+
+    for(int i=methodList.size()-1;i>=0;i--){
+      sb.delete(startList.get(i),startList.get(i)+lengthList.get(i));
+      sb.insert(startList.get(i),methodList.get(i));
+    }
+
+    System.out.println(sb);
+    final ObjectId newId = writeBlob(sb.toString().getBytes(StandardCharsets.UTF_8));
+    result.add(new Entry(entry.mode,entry.name, newId, entry.pathContext));
+    //他のファイルみたいにmjava　ってつけてないけど
+    //でも、.javaを置換して.mjavaにするのはなんか違うよね
+
+    //remove
+    methodList.clear();
+    startList.clear();
+    lengthList.clear();
+
     return result;
   }
 

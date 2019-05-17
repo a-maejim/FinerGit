@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import finergit.FinerGitRewriter;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.InfixExpression.Operator;
@@ -1046,6 +1048,13 @@ public class JavaFileVisitor extends ASTVisitor {
 
   @Override
   public boolean visit(final MethodDeclaration node) {
+    /*
+    System.out.println("start :"+node.getStartPosition()+"\n");
+    System.out.println("length :"+node.getLength()+"\n");
+    System.out.println("method :"+node.toString());
+    */
+    FinerGitRewriter re = new FinerGitRewriter(config);
+    re.methodLineSet(node.getStartPosition(),node.getLength());
 
     // 内部クラスのメソッドでない場合は，ダミーメソッドを生成し，モジュールスタックに追加
     if (1 == this.classNestLevel) {
