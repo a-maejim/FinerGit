@@ -24,15 +24,6 @@ public class FinerGitRewriter extends ConcurrentRepositoryRewriter {
 
   private final FinerJavaFileBuilder builder;
 
-  static ArrayList<Integer> startList = new ArrayList<Integer>();
-  static ArrayList<Integer> lengthList = new ArrayList<Integer>();
-  static ArrayList<String> methodList = new ArrayList<String>();
-
-  public void methodLineSet(int st,int lng){
-    startList.add(st);
-    lengthList.add(lng);
-  }
-
   public FinerGitRewriter(final FinerGitConfig config) {
     this.config = config;
     this.builder = new FinerJavaFileBuilder(config);
@@ -62,35 +53,23 @@ public class FinerGitRewriter extends ConcurrentRepositoryRewriter {
       log.debug("Keep original file: {}", entry);
       result.add(entry);
     }
+    /* メソッド切り出し */
+    /*
     for (final FinerJavaModule m : extractFinerModules(entry)) {
       final String finerSource = // 最終行に改行を入れないと途中行とのマッチングが正しく行われない
           String.join(System.lineSeparator(), m.getLines()) + System.lineSeparator();
       final ObjectId newId = writeBlob(finerSource.getBytes(StandardCharsets.UTF_8));
       final String name = m.getFileName();
-      methodList.add(finerSource.replaceAll("\n"," "));
       log.debug("Generate finer module: {} -> {} {}", entry, name, newId.name());
-      result.add(new Entry(entry.mode, name, newId, entry.pathContext));
-    }
+      //result.add(new Entry(entry.mode, name, newId, entry.pathContext));
+    }*/
 
-    final String test = new String(readBlob(entry.id), StandardCharsets.UTF_8);
-    StringBuilder sb = new StringBuilder();
-    sb.append(test);
-
-    for(int i=methodList.size()-1;i>=0;i--){
-      sb.delete(startList.get(i),startList.get(i)+lengthList.get(i));
-      sb.insert(startList.get(i),methodList.get(i));
-    }
-
-    System.out.println(sb);
-    final ObjectId newId = writeBlob(sb.toString().getBytes(StandardCharsets.UTF_8));
-    result.add(new Entry(entry.mode,entry.name, newId, entry.pathContext));
-    //他のファイルみたいにmjava　ってつけてないけど
-    //でも、.javaを置換して.mjavaにするのはなんか違うよね
-
-    //remove
-    methodList.clear();
-    startList.clear();
-    lengthList.clear();
+    /* メソッド1行 */
+    final String base = entry.pathContext + "/" + entry.name;
+    final String source = new String(readBlob(entry.id), StandardCharsets.UTF_8);
+    final String txt=builder.getFinerJavaString(base,source);
+    final ObjectId newId = writeBlob(txt.getBytes(StandardCharsets.UTF_8));
+    result.add(new Entry(entry.mode, entry.name, newId, entry.pathContext));
 
     return result;
   }

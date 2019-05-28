@@ -74,6 +74,23 @@ public class FinerJavaFileBuilder {
     return visitor.getFinerJavaModules();
   }
 
+  public String getFinerJavaString(final String path, final String text) {
+    final ASTParser parser = createNewParser();
+    parser.setSource(text.toCharArray());
+    final CompilationUnit ast = (CompilationUnit) parser.createAST(null);
+
+    // 与えられたASTに問題があるときはそのまま返す
+    final IProblem[] problems = ast.getProblems();
+    if (null == problems || 0 < problems.length) {
+      System.out.println("error ast ; " + path );
+      return text;
+    }
+
+    final JavaFileVisitor visitor = new JavaFileVisitor(Paths.get(path), this.config);
+    ast.accept(visitor);
+    return visitor.getFinerJavaString(text);
+  }
+
   private ASTParser createNewParser() {
     ASTParser parser = ASTParser.newParser(AST.JLS11);
 

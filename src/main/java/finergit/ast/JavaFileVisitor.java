@@ -26,6 +26,9 @@ public class JavaFileVisitor extends ASTVisitor {
   private final List<FinerJavaModule> moduleList;
   private final Stack<Class<?>> contexts;
   private int classNestLevel;
+  private ArrayList<Integer> startList = new ArrayList<Integer>();
+  private ArrayList<Integer> lengthList = new ArrayList<Integer>();
+  private ArrayList<String> methodList = new ArrayList<String>();
 
   public JavaFileVisitor(final Path path, final FinerGitConfig config) {
 
@@ -1048,13 +1051,9 @@ public class JavaFileVisitor extends ASTVisitor {
 
   @Override
   public boolean visit(final MethodDeclaration node) {
-    /*
-    System.out.println("start :"+node.getStartPosition()+"\n");
-    System.out.println("length :"+node.getLength()+"\n");
-    System.out.println("method :"+node.toString());
-    */
-    FinerGitRewriter re = new FinerGitRewriter(config);
-    re.methodLineSet(node.getStartPosition(),node.getLength());
+    startList.add(node.getStartPosition());
+    lengthList.add(node.getLength());
+    methodList.add(node.toString().replaceAll("\n"," "));
 
     // 内部クラスのメソッドでない場合は，ダミーメソッドを生成し，モジュールスタックに追加
     if (1 == this.classNestLevel) {
@@ -1241,7 +1240,6 @@ public class JavaFileVisitor extends ASTVisitor {
       this.addToPeekModule(
           new FinerJavaMethodToken("MetodToken[" + finerJavaMethod.name + "]", finerJavaMethod));
     }
-
     return false;
   }
 
@@ -2107,5 +2105,20 @@ public class JavaFileVisitor extends ASTVisitor {
     final FinerJavaModule peekModule = this.moduleStack.peek();
     Stream.of(tokens)
         .forEach(peekModule::addToken);
+  }
+
+  /*  メソッドを1行にして返す */
+  public String getFinerJavaString(final String text){
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(text);
+    for (int i = methodList.size() - 1; i >= 0; i--) {
+      sb.delete(startList.get(i), startList.get(i) + lengthList.get(i));
+      sb.insert(startList.get(i), methodList.get(i));
+    }
+    methodList.clear();
+    startList.clear();
+    lengthList.clear();
+    return sb.toString();
   }
 }
