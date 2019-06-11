@@ -62,6 +62,7 @@ public class FinerGitMain {
     // final FinerRepoBuilder builder = new FinerRepoBuilder(this.config);
     // return builder.exec();
     final FinerRepoBuilder builder = new FinerRepoBuilder(this.config);
-    builder.exec();
+    builder.exec(true);
+    builder.exec(false);
   }
 }

@@ -9,6 +9,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.File;
 
 /**
  * Gitリポジトリから細粒度リポジトリの生成処理を行うクラス
@@ -25,7 +26,7 @@ public class FinerRepoBuilder {
     this.config = config;
   }
 
-  public GitRepo exec() {
+  public GitRepo exec(boolean isFirstTime) {
     log.trace("enter exec()");
     GitRepo repo = null;
     try {
@@ -45,10 +46,13 @@ public class FinerRepoBuilder {
       final boolean cleanSucceeded = repo.clean();
       log.debug("git clean -fd: {}", cleanSucceeded ? "succeeded" : "failed");
 
+      if(isFirstTime) {
+        deleteDirectory("/Users/a-maejim/Documents/kGenProg-fg-sample");
+      }
+
     } catch (final Exception e) {
       e.printStackTrace();
     }
-
     log.trace("exit exec()");
     return repo;
   }
@@ -75,4 +79,24 @@ public class FinerRepoBuilder {
       }
     });
   }
+
+  public static void deleteDirectory(final String dirPath) throws Exception {
+    File file = new File(dirPath);
+    recursiveDeleteFile(file);
+  }
+  private static void recursiveDeleteFile(final File file) throws Exception {
+    // 存在しない場合は処理終了
+    if (!file.exists()) {
+      return;
+    }
+    // 対象がディレクトリの場合は再帰処理
+    if (file.isDirectory()) {
+      for (File child : file.listFiles()) {
+        recursiveDeleteFile(child);
+      }
+    }
+    // 対象がファイルもしくは配下が空のディレクトリの場合は削除する
+    file.delete();
+  }
+
 }

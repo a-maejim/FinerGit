@@ -74,6 +74,7 @@ public class FinerJavaFileBuilder {
     return visitor.getFinerJavaModules();
   }
 
+  /*
   public String getFinerJavaString(final String path, final String text) {
     final ASTParser parser = createNewParser();
     parser.setSource(text.toCharArray());
@@ -90,6 +91,7 @@ public class FinerJavaFileBuilder {
     ast.accept(visitor);
     return visitor.getFinerJavaString(text);
   }
+  */
 
   private ASTParser createNewParser() {
     ASTParser parser = ASTParser.newParser(AST.JLS11);

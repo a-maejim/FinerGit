@@ -26,9 +26,11 @@ public class JavaFileVisitor extends ASTVisitor {
   private final List<FinerJavaModule> moduleList;
   private final Stack<Class<?>> contexts;
   private int classNestLevel;
+  /*
   private ArrayList<Integer> startList = new ArrayList<Integer>();
   private ArrayList<Integer> lengthList = new ArrayList<Integer>();
   private ArrayList<String> methodList = new ArrayList<String>();
+  */
 
   public JavaFileVisitor(final Path path, final FinerGitConfig config) {
 
@@ -1051,9 +1053,11 @@ public class JavaFileVisitor extends ASTVisitor {
 
   @Override
   public boolean visit(final MethodDeclaration node) {
+    /*
     startList.add(node.getStartPosition());
     lengthList.add(node.getLength());
     methodList.add(node.toString().replaceAll("\n"," "));
+     */
 
     // 内部クラスのメソッドでない場合は，ダミーメソッドを生成し，モジュールスタックに追加
     if (1 == this.classNestLevel) {
@@ -2108,6 +2112,7 @@ public class JavaFileVisitor extends ASTVisitor {
   }
 
   /*  メソッドを1行にして返す */
+  /*
   public String getFinerJavaString(final String text){
 
     StringBuilder sb = new StringBuilder();
@@ -2121,4 +2126,5 @@ public class JavaFileVisitor extends ASTVisitor {
     lengthList.clear();
     return sb.toString();
   }
+   */
 }
